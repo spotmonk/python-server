@@ -12,7 +12,7 @@ ANIMALS = [
 def get_all_animals():
     # Open a connection to the database
     
-    with sqlite3.connect("./kennels.db") as conn:
+    with sqlite3.connect("./kennel.db") as conn:
         print(conn)
         # Just use these. It's a Black Box.
         conn.row_factory = sqlite3.Row
@@ -84,6 +84,7 @@ def get_single_animal(id):
 
         return json.dumps(animal.__dict__)
 
+
 def get_animals_by_location(location):
 
     with sqlite3.connect("./kennel.db") as conn:
@@ -113,6 +114,7 @@ def get_animals_by_location(location):
             animals.append(animal.__dict__)
 
     return json.dumps(animals)
+
 
 def get_animals_by_status(status):
 
@@ -162,20 +164,16 @@ def create_animal(new_animal):
     # Return the dictionary with `id` property added
     return new_object.__dict__
 
+
 def delete_animal(id):
-    # Initial -1 value for animal index, in case one isn't found
-    animal_index = -1
+      with sqlite3.connect("./kennel.db") as conn:
+        db_cursor = conn.cursor()
 
-    # Iterate the ANIMALS list, but use enumerate() so that you
-    # can access the index value of each item
-    for index, animal in enumerate(ANIMALS):
-        if animal["id"] == id:
-            # Found the animal. Store the current index.
-            animal_index = index
+        db_cursor.execute("""
+        DELETE FROM animal
+        WHERE id = ?
+        """, (id, ))
 
-    # If the animal was found, use pop(int) to remove it from list
-    if animal_index >= 0:
-        ANIMALS.pop(animal_index)
 
 def update_animal(id, new_animal):
     # Iterate the ANIMALS list, but use enumerate() so that
