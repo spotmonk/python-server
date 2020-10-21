@@ -40,7 +40,7 @@ def get_all_customers():
         FROM customer c
         """)
 
-        # Initialize an empty list to hold all animal representations
+        # Initialize an empty list to hold all customer representations
         customers = []
 
         # Convert rows of data into a Python list
@@ -49,7 +49,7 @@ def get_all_customers():
         # Iterate list of data returned from database
         for row in dataset:
 
-            # Create an animal instance from the current row.
+            # Create an customer instance from the current row.
             # Note that the database fields are specified in
             # exact order of the parameters defined in the
             # Animal class above.
@@ -83,7 +83,7 @@ def get_single_customer(id):
         # Load the single result into memory
         data = db_cursor.fetchone()
 
-        # Create an animal instance from the current row
+        # Create an customer instance from the current row
         customer = Customer(data['id'], data['name'], data['address'],
                             data['email'], data['password'])
 
@@ -137,15 +137,32 @@ def delete_customer(id):
         db_cursor = conn.cursor()
 
         db_cursor.execute("""
-        DELETE FROM animal
+        DELETE FROM customer
         WHERE id = ?
         """, (id, ))
 
 def update_customer(id, new_customer):
-    # Iterate the CUSTOMERS list, but use enumerate() so that
-    # you can access the index value of each item.
-    for index, customer in enumerate(CUSTOMERS):
-        if customer["id"] == id:
-            # Found the customer. Update the value.
-            CUSTOMERS[index] = new_customer
-            break
+    with sqlite3.connect("./kennel.db") as conn:
+        db_cursor = conn.cursor()
+
+        db_cursor.execute("""
+        UPDATE Customer
+            SET
+                name = ?,
+                address = ?,
+                email = ?,
+                password = ?
+        WHERE id = ?
+        """, (new_customer['name'], new_customer['address'], 
+                new_customer['email'], new_customer['password'], id, ))
+
+        # Were any rows affected?
+        # Did the client send an `id` that exists?
+        rows_affected = db_cursor.rowcount
+
+    if rows_affected == 0:
+        # Forces 404 response by main module
+        return False
+    else:
+        # Forces 204 response by main module
+        return True
