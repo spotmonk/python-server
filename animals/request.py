@@ -51,8 +51,8 @@ def get_all_animals():
         # Iterate list of data returned from database
         for row in dataset:
             # Create an animal instance from the current row
-            animal = Animal(row['name'], row['breed'], row['status'],
-                            row['location_id'], row['customer_id'], row['id'])
+            animal = Animal(row['id'], row['name'], row['breed'], row['status'],
+                            row['location_id'], row['customer_id'])
 
             # Create a Location instance from the current row
             location = Location(row['location_id'], row['location_name'], row['location_address'])
@@ -163,21 +163,30 @@ def get_animals_by_status(status):
 
 
 def create_animal(new_animal):
-    # Get the id value of the last animal in the list
-    max_id = ANIMALS[-1].id
+    with sqlite3.connect("./kennel.db") as conn:
+        db_cursor = conn.cursor()
 
-    # Add 1 to whatever that number is
-    new_id = max_id + 1
+        db_cursor.execute("""
+        INSERT INTO Animal
+            ( name, breed, status, location_id, customer_id )
+        VALUES
+            ( ?, ?, ?, ?, ?);
+        """, (new_animal['name'], new_animal['breed'],
+              new_animal['treatment'], new_animal['locationId'],
+              new_animal['customerId'], ))
 
-    # Add an `id` property to the animal dictionary
-    new_animal["id"] = new_id
+        # The `lastrowid` property on the cursor will return
+        # the primary key of the last thing that got added to
+        # the database.
+        id = db_cursor.lastrowid
 
-    # Add the animal dictionary to the list
-    new_object = Animal(new_id, new_animal["name"], new_animal["species"], new_animal["status"], new_animal["location"], new_animal["customer"])
-    ANIMALS.append(new_object)
+        # Add the `id` property to the animal dictionary that
+        # was sent by the client so that the client sees the
+        # primary key in the response.
+        new_animal['id'] = id
 
-    # Return the dictionary with `id` property added
-    return new_object.__dict__
+
+    return json.dumps(new_animal)
 
 
 def delete_animal(id):
