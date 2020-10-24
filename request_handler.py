@@ -185,7 +185,8 @@ class HandleRequests(BaseHTTPRequestHandler):
         self.send_response(200)
         self.send_header('Access-Control-Allow-Origin', '*')
         self.send_header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE')
-        self.send_header('Access-Control-Allow-Headers', 'X-Requested-With')
+        self.send_header('Access-Control-Allow-Headers',
+                         'X-Requested-With, content-type')
         self.end_headers()
 
 # This function is not inside the class. It is the starting
